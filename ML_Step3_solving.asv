@@ -14,7 +14,7 @@ A = Problem.A;
 disp('Done loading matrix');
 drawnow('update');
 [N, ~] = size(A);
-result_filename = ['./data/ML/Step3_', 'test', '.dat'];
+result_filename = ['./data/ML/Step3_', 'test', '.xls'];
 
 % load preconditioner of matrix
 precond_filename = ['./matrices/', matrixname, '_precond.mat'];
@@ -75,15 +75,17 @@ for m = 0:M
     else
         % Inject errors from Experiment 1 to M, each at a random iteration 
         inject_error = 1;
-        error = E(1)
-        %bitflip_iter = error(1);
-        %bitflip_element = error(2);
+        bitflip_iter = E(m,1);
+        bitflip_element = E(m,2);
         
-        [~,flag,iter,diff_v] = pcg4(A, b, tol, error_max_iter, L, L', inject_error, bitflip_pos, bitflip_iter);
-        converge = iter;   % number of iterations in error-injecting run
-        
-        result = [N,flag,bitflip_iter,bitflip_pos,diff_v,A_row_2norm(bitflip_pos),noerror_converge,converge];
-        dlmwrite(result_filename, result, '-append');
+        [~,flag,iter,diff_v,first_abs_gradient,first_rel_gradient,xval] = pcg4(A, b, tol, error_max_iter, L, L', inject_error, bitflip_element, bitflip_iter);
+        converge = iter;   % number of iterations in error-injecting run  
+
+        grad_abs(:, m) = first_abs_gradient;
+        grad_rel(:, m) = first_rel_gradient;
+
+        result = [N,flag,bitflip_iter,bitflip_element,diff_v,A_row_2norm(bitflip_element),converge/noerror_converge,'%10.2f',grad_abs(bitflip_element),'%10.2f',grad_rel(bitflip_element),sprintf('%10.2f',xval(bitflip_element))];
+        writematrix(result,result_filename,'WriteMode','append');
         
         disp(['Matrix = ', matrixname, ', Experiment=', num2str(m), ', converge=', num2str(converge)]);
         if flag == 1

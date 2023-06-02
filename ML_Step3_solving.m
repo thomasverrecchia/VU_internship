@@ -5,6 +5,7 @@ function ML_Step3_solving(matrixname,nb_experiment)
 % bitflip_iter: iteration number to inject error 
 % bitflip_element: element to inject error
 
+
 M = nb_experiment; % number of experiments, each injects error at a random vector element
 
 % load matrix
@@ -78,10 +79,13 @@ for m = 0:M
         bitflip_iter = E(m,1);
         bitflip_element = E(m,2);
         
-        [~,flag,iter,diff_v] = pcg4(A, b, tol, error_max_iter, L, L', inject_error, bitflip_element, bitflip_iter);
-        converge = iter;   % number of iterations in error-injecting run
-        
-        result = [N,flag,bitflip_iter,bitflip_element,diff_v,A_row_2norm(bitflip_element),converge/noerror_converge];
+        [~,flag,iter,diff_v,first_abs_gradient,first_rel_gradient,xval] = pcg4(A, b, tol, error_max_iter, L, L', inject_error, bitflip_element, bitflip_iter);
+        converge = iter;   % number of iterations in error-injecting run  
+
+        grad_abs(:, m) = first_abs_gradient;
+        grad_rel(:, m) = first_rel_gradient;
+
+        result = [N,flag,bitflip_iter,bitflip_element,diff_v,A_row_2norm(bitflip_element),grad_abs(bitflip_element),grad_rel(bitflip_element),xval(bitflip_element),converge/noerror_converge];
         writematrix(result,result_filename,'WriteMode','append');
         
         disp(['Matrix = ', matrixname, ', Experiment=', num2str(m), ', converge=', num2str(converge)]);

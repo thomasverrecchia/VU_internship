@@ -6,7 +6,7 @@ comments = 'Step5';
 close all;
 
 %matrices = {'bcsstk18', 'bodyy5', 'cbuckle', 'G2_circuit'};
-matrices = {'bcsstk18'};
+matrices = {'bodyy5','bcsstk18','cbuckle','G2_circuit'};
 num_matrices = length(matrices);
 
 bitflip_iter = 1;
@@ -43,7 +43,7 @@ for m = 1:num_matrices
     [~,~,iter,~] = pcg4(A, b, tol, max_iter, L, L', inject_error, 0, 0);
     noerror_converge = iter;   % number of iterations in error-free run
     disp(matrixname);
-    protected = load("data\ML\PredictedSlowdown\protected_bcsstk18.mat");
+    protected = load("data\ML\PredictedSlowdown\protected_bcsstk18_V2.dat");
 
     
     %% load matrix file
@@ -60,7 +60,6 @@ for m = 1:num_matrices
     num_exps = length(converge_ratios);
     
     %% load analysis data by A_row 2-norm
-    CI95 = tinv([0.975], num_exps-1);  % 95% confidence interval
     
     protect_method = 'Arow2norm'; 
     analysis_filename = ['./data/ML/Analysis/', comments, '_', matrixname, '_', protect_method, '.dat'];
@@ -69,7 +68,6 @@ for m = 1:num_matrices
     mean_slowdowns_Arow2norm = mean(slowdowns_Arow2norm);
     std_slowdowns_Arow2norm = std(slowdowns_Arow2norm);
     sem_slowdowns_Arow2norm = std_slowdowns_Arow2norm/sqrt(num_exps);
-    CI95_slowdowns_Arow2norm = CI95*sem_slowdowns_Arow2norm;
     overheads1_Arow2norm = slowdowns_Arow2norm;
     for p = 1:num_protects
         protect = protects(p);
@@ -78,10 +76,8 @@ for m = 1:num_matrices
     mean_overheads1_Arow2norm = mean(overheads1_Arow2norm);
     std_overheads1_Arow2norm = std(overheads1_Arow2norm);
     sem_overheads1_Arow2norm = std_overheads1_Arow2norm/sqrt(num_exps);
-    CI95_overheads1_Arow2norm = CI95*sem_overheads1_Arow2norm;
     
     %% load analysis data by random
-    CI95 = tinv([0.975], num_exps-1);  % 95% confidence interval
     
     protect_method = 'random'; 
     analysis_filename = ['./data/ML/Analysis/', comments, '_', matrixname, '_', protect_method, '.dat'];
@@ -90,7 +86,6 @@ for m = 1:num_matrices
     mean_slowdowns_random = mean(slowdowns_random);
     std_slowdowns_random = std(slowdowns_random);
     sem_slowdowns_random = std_slowdowns_random/sqrt(num_exps);
-    CI95_slowdowns_random = CI95*sem_slowdowns_random;
     overheads1_random = slowdowns_random;
     for p = 1:num_protects
         protect = protects(p);
@@ -99,7 +94,6 @@ for m = 1:num_matrices
     mean_overheads1_random = mean(overheads1_random);
     std_overheads1_random = std(overheads1_random);
     sem_overheads1_random = std_overheads1_random/sqrt(num_exps);
-    CI95_overheads1_random = CI95*sem_overheads1_random;
 
     %% load analysis data for ML    
     protect_method = 'ML_Model'; 
@@ -109,6 +103,7 @@ for m = 1:num_matrices
     slowdowns_ML = readmatrix(analysis_filename);
     mean_slowdowns_ML = mean(slowdowns_ML);
     overhead_ML = mean(100*(((N*noerror_converge\size(protected,1))+1)*slowdowns_ML-1));
+    disp(overhead_ML)
 
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  

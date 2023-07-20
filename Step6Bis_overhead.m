@@ -43,7 +43,8 @@ for m = 1:num_matrices
     [~,~,iter,~] = pcg4(A, b, tol, max_iter, L, L', inject_error, 0, 0);
     noerror_converge = iter;   % number of iterations in error-free run
     disp(matrixname);
-    protected = load("data\ML\PredictedSlowdown\protected_bcsstk18_V2.dat");
+    toload = ['data\ML\PredictedSlowdown\protected_',matrixname,'_V2.dat'];
+    protected = load(toload);
 
     
     %% load matrix file
@@ -74,6 +75,7 @@ for m = 1:num_matrices
         overheads1_Arow2norm(:, p) = 100*((protect+1)*slowdowns_Arow2norm(:, p)-1);
     end
     mean_overheads1_Arow2norm = mean(overheads1_Arow2norm);
+    disp(min(mean_overheads1_Arow2norm))
     std_overheads1_Arow2norm = std(overheads1_Arow2norm);
     sem_overheads1_Arow2norm = std_overheads1_Arow2norm/sqrt(num_exps);
     
